@@ -1,6 +1,7 @@
 """Main flask app for my store."""
 from uuid import uuid4
 from flask import Flask, request
+from flask_smorest import abort
 from db import stores, items
 
 
@@ -19,7 +20,7 @@ def get_store(sotre_id):
     try:
         return {"store": stores[sotre_id]}
     except KeyError:
-        return {"message": "Store not found."}, 404
+        abort(404, message="Store not found,")
 
 
 @app.post("/store")
@@ -44,7 +45,7 @@ def get_items_in_store(item_id):
     try:
         return {"item": items[item_id]}
     except KeyError:
-        return {"message": "Item not found."}, 404
+        abort(404, message="Item not found.")
 
 
 @app.post("/item")
