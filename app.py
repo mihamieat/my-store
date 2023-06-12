@@ -1,0 +1,60 @@
+"""Main flask app for my store."""
+from uuid import uuid4
+from flask import Flask, request
+from db import stores, items
+
+
+app = Flask(__name__)
+
+
+@app.get("/store")
+def get_stores():
+    """Returns all stores."""
+    return {"stores": list(stores.values())}
+
+
+@app.get("/store/<string:sotre_id>")
+def get_store(sotre_id):
+    """Returns a specific store by its name."""
+    try:
+        return {"store": stores[sotre_id]}
+    except KeyError:
+        return {"message": "Store not found."}, 404
+
+
+@app.post("/store")
+def create_store():
+    """Creates a new store."""
+    req = request.get_json()
+    store_id = uuid4().hex
+    store = {**req, "id": store_id}
+    stores[store_id] = store
+    return {"message": "Store created", "store": store}, 201
+
+
+@app.get("/items")
+def get_items():
+    """Returns items."""
+    return {"items": list(items.values())}
+
+
+@app.get("/item/<string:item_id>")
+def get_items_in_store(item_id):
+    """Returs items from a specific store."""
+    try:
+        return {"item": items[item_id]}
+    except KeyError:
+        return {"message": "Item not found."}, 404
+
+
+@app.post("/item")
+def create_item():
+    """Creates a new item in a specified store."""
+    req = request.get_json()
+    if req["store_id"] not in stores:
+        return {"message": "Store not found."}, 404
+    item_id = uuid4().hex
+    item = {**req, "id": item_id}
+    items[item_id] = item
+
+    return {"message": "Item created.", "item": item}, 201
