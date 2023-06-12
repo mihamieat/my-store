@@ -27,10 +27,19 @@ def get_store(sotre_id):
 def create_store():
     """Creates a new store."""
     req = request.get_json()
+    if "name" not in req:
+        abort(
+            400,
+            message="Bad request. Ensure 'name' \
+is included in the JSON payload.",
+        )
+    for store in stores.values():
+        if store["name"] == req["name"]:
+            abort(400, message="Store already exists.")
     store_id = uuid4().hex
     store = {**req, "id": store_id}
     stores[store_id] = store
-    return {"message": "Store created", "store": store}, 201
+    return {"message": "Store created.", "store": store}, 201
 
 
 @app.get("/items")
