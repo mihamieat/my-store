@@ -83,3 +83,12 @@ and 'name' are included in the JSON payload.",
     items[item_id] = item
 
     return item
+
+
+@app.delete("/item/<string:item_id>")
+def delete_item(item_id):
+    try:
+        del items[item_id]
+        return {"message": "Item deleted."}, 200
+    except KeyError:
+        abort(404, message="Item not found.")
