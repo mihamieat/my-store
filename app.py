@@ -44,6 +44,7 @@ is included in the JSON payload.",
 
 @app.delete("/store/<string:store_id>")
 def delete_store(store_id):
+    """Deletes a store."""
     try:
         del stores[store_id]
         return {"message": "Store deleted."}
@@ -114,6 +115,7 @@ and 'name' are included in the JSON payload.",
 
 @app.delete("/item/<string:item_id>")
 def delete_item(item_id):
+    """Delete an existing item."""
     try:
         del items[item_id]
         return {"message": "Item deleted."}, 200
