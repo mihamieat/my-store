@@ -94,6 +94,24 @@ and 'name' are included in the JSON payload.",
     return item
 
 
+@app.put("/item/<string:item_id>")
+def update_item(item_id):
+    """Update an existing item."""
+    req = request.json()
+    if "price" not in req or "name" not in req:
+        abort(
+            400,
+            message="Bad request. Ensure 'price', \
+and 'name' are included in the JSON payload.",
+        )
+    try:
+        item = items[item_id]
+        item |= req
+        return {"message": "Item updated.", "item": items[item_id]}
+    except KeyError:
+        abort(404, message="Item not found")
+
+
 @app.delete("/item/<string:item_id>")
 def delete_item(item_id):
     try:
