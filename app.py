@@ -42,6 +42,15 @@ is included in the JSON payload.",
     return {"message": "Store created.", "store": store}, 201
 
 
+@app.delete("/store/<string:store_id>")
+def delete_store(store_id):
+    try:
+        del stores[store_id]
+        return {"message": "Store deleted."}
+    except KeyError:
+        abort(404, message="Store not found.")
+
+
 @app.get("/items")
 def get_items():
     """Returns items."""
