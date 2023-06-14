@@ -14,15 +14,16 @@ blueprint = Blueprint("Items", __name__, description="Operations on items.")
 class Item(MethodView):
     """Items API resource."""
 
+    @blueprint.response(200, ItemSchema)
     def get(self, item_id):
         """Returns an intem by its id."""
         try:
-            item = items[item_id]
-            return {"item": item}
+            return items[item_id]
         except KeyError:
             abort(404, message="Item not found")
 
     @blueprint.arguments(ItemUpdateSchema)
+    @blueprint.response(200, ItemSchema)
     def put(self, item_data, item_id):
         """Update an existing item."""
         try:
@@ -44,11 +45,13 @@ class Item(MethodView):
 class ItemList(MethodView):
     """Items list API resource."""
 
+    @blueprint.response(200, ItemSchema(many=True))
     def get(self):
         """Returns all items."""
-        return {"items": list(items.values())}
+        return list(items.values())
 
     @blueprint.arguments(ItemSchema)
+    @blueprint.response(201, ItemSchema)
     def post(self, item_data):
         """Creates a new item in a specified store."""
         for item in items.values():
