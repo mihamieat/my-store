@@ -14,11 +14,11 @@ blueprint = Blueprint("stores", __name__, description="Operations on stores")
 class Store(MethodView):
     """Store API resource."""
 
+    @blueprint.response(200, StoreSchema)
     def get(self, store_id):
         """Returns a store by its UUID."""
         try:
-            store = stores[store_id]
-            return {"store": store}, 200
+            return stores[store_id]
         except KeyError:
             abort(404, message="Store not found")
 
@@ -35,11 +35,13 @@ class Store(MethodView):
 class StoreList(MethodView):
     """Stores list API resource."""
 
+    @blueprint.response(200, StoreSchema(many=True))
     def get(self):
         """Returns all stores."""
-        return {"stores": list(stores.values())}
+        return list(stores.values())
 
     @blueprint.arguments(StoreSchema)
+    @blueprint.response(201, StoreSchema)
     def post(self, store_data):
         """Creates a new store."""
         for store in stores.values():
