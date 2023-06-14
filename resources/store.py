@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Store API resource."""
 from uuid import uuid4
-from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import stores
@@ -41,19 +40,14 @@ class StoreList(MethodView):
         return {"stores": list(stores.values())}
 
     @blueprint.arguments(StoreSchema)
-    def post(self):
+    def post(self, store_data):
         """Creates a new store."""
-        req = request.get_json()
-        if "name" not in req:
-            abort(
-                400,
-                message="Bad request. Ensure 'name' \
-is included in the JSON payload.",
-            )
         for store in stores.values():
-            if store["name"] == req["name"]:
+            if store_data["name"] == store["name"]:
                 abort(400, message="Store already exists.")
+
         store_id = uuid4().hex
-        store = {**req, "id": store_id}
+        store = {**store_data, "id": store_id}
         stores[store_id] = store
-        return {"message": "Store created.", "store": store}, 201
+
+        return store
