@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """Items API resource. """
 from uuid import uuid4
-from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import items
+from schemas import ItemSchema, ItemUpdateSchema
 
 
 blueprint = Blueprint("Items", __name__, description="Operations on items.")
@@ -12,11 +13,21 @@ blueprint = Blueprint("Items", __name__, description="Operations on items.")
 @blueprint.route("/item/<string:item_id>")
 class Item(MethodView):
     """Items API resource."""
+
     def get(self, item_id):
         """Returns an intem by its id."""
         try:
             item = items[item_id]
             return {"item": item}
+        except KeyError:
+            abort(404, message="Item not found")
+
+    @blueprint.arguments(ItemUpdateSchema)
+    def put(self, item_data, item_id):
+        """Update an existing item."""
+        try:
+            item = items[item_id]
+            item |= item_data
         except KeyError:
             abort(404, message="Item not found")
 
@@ -32,23 +43,14 @@ class Item(MethodView):
 @blueprint.route("/item")
 class ItemList(MethodView):
     """Items list API resource."""
+
     def get(self):
         """Returns all items."""
         return {"items": list(items.values())}
 
-    def post(self):
+    @blueprint.arguments(ItemSchema)
+    def post(self, item_data):
         """Creates a new item in a specified store."""
-        item_data = request.get_json()
-        if (
-            "price" not in item_data
-            or "store_id" not in item_data
-            or "name" not in item_data
-        ):
-            abort(
-                400,
-                message="Bad request. Ensure 'price', 'store_id', \
-and 'name' are included in the JSON payload.",
-            )
         for item in items.values():
             if (
                 item_data["name"] == item["name"]

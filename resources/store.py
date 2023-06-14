@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Store API resource."""
 from uuid import uuid4
 from flask import request
@@ -13,6 +14,7 @@ blueprint = Blueprint("stores", __name__, description="Operations on stores")
 @blueprint.route("/store/<string:store_id>")
 class Store(MethodView):
     """Store API resource."""
+
     def get(self, store_id):
         """Returns a store by its UUID."""
         try:
@@ -33,6 +35,7 @@ class Store(MethodView):
 @blueprint.route("/store")
 class StoreList(MethodView):
     """Stores list API resource."""
+
     def get(self):
         """Returns all stores."""
         return {"stores": list(stores.values())}
