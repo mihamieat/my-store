@@ -4,6 +4,7 @@ from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import stores
+from schemas import StoreSchema
 
 
 blueprint = Blueprint("stores", __name__, description="Operations on stores")
@@ -36,6 +37,7 @@ class StoreList(MethodView):
         """Returns all stores."""
         return {"stores": list(stores.values())}
 
+    @blueprint.arguments(StoreSchema)
     def post(self):
         """Creates a new store."""
         req = request.get_json()
