@@ -9,6 +9,8 @@ distlib==0.3.6
 filelock==3.12.1
 Flask==2.3.2
 flask-smorest==0.42.0
+Flask-SQLAlchemy==3.0.3
+greenlet==2.0.2
 identify==2.5.24
 isort==5.12.0
 itsdangerous==2.1.2
@@ -29,6 +31,7 @@ pycodestyle==2.10.0
 pylint==2.17.4
 python-dotenv==1.0.0
 PyYAML==6.0
+SQLAlchemy==2.0.16
 tomli==2.0.1
 tomlkit==0.11.8
 typing_extensions==4.6.3
