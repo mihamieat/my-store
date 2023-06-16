@@ -4,4 +4,4 @@
 from flask_sqlalchemy import SQLAlchemy
 
 
-db = SQLAlchemy  # pylint: disable=C0103
+db = SQLAlchemy()  # pylint: disable=C0103
