@@ -7,6 +7,7 @@ from db import db
 import models  # noqa # pylint: disable=W0611
 from resources.item import blueprint as ItemBlueprint
 from resources.store import blueprint as StoreBlueprint
+from resources.tags import blueprint as TagsBlueprint
 
 
 def create_app(db_url=None):
@@ -36,5 +37,6 @@ swagger-ui-dist/"
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
+    api.register_blueprint(TagsBlueprint)
 
     return app
