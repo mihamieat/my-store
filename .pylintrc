@@ -1,0 +1,8 @@
+[pylint]
+disable = C0114, C0115, C0116, W0511, R0903
+
+[MESSAGES CONTROL]
+enable = missing-docstring
+
+[FORMAT]
+max-line-length = 110

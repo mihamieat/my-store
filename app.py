@@ -1,60 +1,120 @@
+# -*- coding: utf-8 -*-
 """Main flask app for my store."""
-from uuid import uuid4
-from flask import Flask, request
-from db import stores, items
+import os
+from flask import Flask, jsonify
+from flask_smorest import Api
+from flask_jwt_extended import JWTManager
+
+from db import db
+
+from blocklist import BLOCKLIST
+import models  # noqa # pylint: disable=W0611
+from resources.item import blueprint as ItemBlueprint
+from resources.store import blueprint as StoreBlueprint
+from resources.tag import blueprint as TagsBlueprint
+from resources.user import blueprint as UserBlueprint
 
 
-app = Flask(__name__)
+def create_app(db_url=None):
+    """Create my Flask app."""
 
+    app = Flask(__name__)
 
-@app.get("/store")
-def get_stores():
-    """Returns all stores."""
-    return {"stores": list(stores.values())}
+    app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config["API_TITLE"] = "My Store REST API"
+    app.config["API_VERSION"] = "v1"
+    app.config["OPENAPI_VERSION"] = "3.0.3"
+    app.config["OPENAPI_URL_PREFIX"] = "/"
+    app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
+    app.config[
+        "OPENAPI_SWAGGER_UI_URL"
+    ] = "https://cdn.jsdelivr.net/npm/\
+swagger-ui-dist/"
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv(
+        "DATABASE_URL", "sqlite:///data.db"
+    )
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    db.init_app(app)  # pylint: disable=E1120
+    api = Api(app)
 
+    app.config["JWT_SECRET_KEY"] = "316664261584277152921883716786356913593"
 
-@app.get("/store/<string:sotre_id>")
-def get_store(sotre_id):
-    """Returns a specific store by its name."""
-    try:
-        return {"store": stores[sotre_id]}
-    except KeyError:
-        return {"message": "Store not found."}, 404
+    jwt = JWTManager(app)  # noqa # pylint: disable=W0612
 
+    app.config["JWT_SECRET_KEY"] = "jose"
+    jwt = JWTManager(app)
 
-@app.post("/store")
-def create_store():
-    """Creates a new store."""
-    req = request.get_json()
-    store_id = uuid4().hex
-    store = {**req, "id": store_id}
-    stores[store_id] = store
-    return {"message": "Store created", "store": store}, 201
+    @jwt.additional_claims_loader
+    def add_claims_to_jwt(identity):
+        if identity == 1:
+            return {"is_admin": True}
+        return {"is_admin": False}
 
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):  # pylint: disable=W0613
+        """Expired token callback handler."""
+        return (
+            jsonify({"message": "The token has expired.", "error": "token_expired"}),
+            401,
+        )
 
-@app.get("/items")
-def get_items():
-    """Returns items."""
-    return {"items": list(items.values())}
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error):  # pylint: disable=W0613
+        """Invalid token callback handler."""
+        return (
+            jsonify(
+                {"message": "Signature verification failed.", "error": "invalid_token"}
+            ),
+            401,
+        )
 
+    @jwt.unauthorized_loader
+    def missing_token_callback(error):  # pylint: disable=W0613
+        """Missing token callback handler."""
+        return (
+            jsonify(
+                {
+                    "description": "Request does not contain an access token.",
+                    "error": "authorization_required",
+                }
+            ),
+            401,
+        )
 
-@app.get("/item/<string:item_id>")
-def get_items_in_store(item_id):
-    """Returs items from a specific store."""
-    try:
-        return {"item": items[item_id]}
-    except KeyError:
-        return {"message": "Item not found."}, 404
+    with app.app_context():
+        db.create_all()  # pylint: disable=E1120
 
+    @jwt.token_in_blocklist_loader
+    def check_if_token_in_blocklist(jwt_header, jwt_payload):  # pylint: disable=W0613
+        """Check if token in blocklist."""
+        return jwt_payload["jti"] in BLOCKLIST
 
-@app.post("/item")
-def create_item():
-    """Creates a new item in a specified store."""
-    req = request.get_json()
-    if req["store_id"] not in stores:
-        return {"message": "Store not found."}, 404
-    item_id = uuid4().hex
-    item = {**req, "id": item_id}
-    items[item_id] = item
+    @jwt.revoked_token_loader
+    def revoked_token_callback(jwt_header, jwt_payload):  # pylint: disable=W0613
+        """Revoked token callback."""
+        return (
+            jsonify(
+                {"description": "The token has been revoked.", "error": "token_revoked"}
+            ),
+            401,
+        )
 
-    return {"message": "Item created.", "item": item}, 201
+    @jwt.needs_fresh_token_loader
+    def token_not_fresh_callback(jwt_header, jwt_payload):  # pylint: disable=W0613
+        """Token refresh callback."""
+        return (
+            jsonify(
+                {
+                    "description": "The token is not fresh.",
+                    "error": "fresh_token_required",
+                }
+            ),
+            401,
+        )
+
+    api.register_blueprint(ItemBlueprint)
+    api.register_blueprint(StoreBlueprint)
+    api.register_blueprint(TagsBlueprint)
+    api.register_blueprint(UserBlueprint)
+
+    return app

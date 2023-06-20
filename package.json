@@ -1,0 +1,23 @@
+{
+  "name": "my_store",
+  "version": "0.1.0",
+  "description": "My store repo Flask course and exercises from https://rest-apis-flask.teclado.com/ ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mihamieat/my-store.git"
+  },
+  "keywords": [
+    "flask",
+    "restfulapi"
+  ],
+  "author": "Mihamina Rakotovazaha",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mihamieat/my-store/issues"
+  },
+  "homepage": "https://github.com/mihamieat/my-store#readme"
+}
