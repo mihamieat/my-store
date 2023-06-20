@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Main flask app for my store."""
-import secrets
 import os
 from flask import Flask
 from flask_smorest import Api
@@ -37,7 +36,7 @@ swagger-ui-dist/"
     db.init_app(app)  # pylint: disable=E1120
     api = Api(app)
 
-    app.config["JWT_SECRET_KEY"] = str(secrets.SystemRandom().getrandbits(128))
+    app.config["JWT_SECRET_KEY"] = "316664261584277152921883716786356913593"
 
     jwt = JWTManager(app)  # noqa # pylint: disable=W0612
 
