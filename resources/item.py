@@ -2,7 +2,9 @@
 """Items API resource. """
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import SQLAlchemyError
+
 from db import db
 from models.item import ItemModel
 from schemas import ItemSchema, ItemUpdateSchema
@@ -15,6 +17,7 @@ blueprint = Blueprint("Items", __name__, description="Operations on items.")
 class Item(MethodView):
     """Items API resource."""
 
+    @jwt_required()
     @blueprint.response(200, ItemSchema)
     def get(self, item_id):
         """Returns an intem by its id."""
@@ -36,6 +39,7 @@ class Item(MethodView):
 
         return item
 
+    @jwt_required()
     def delete(self, item_id):
         """Deletes an item by its id."""
         item = ItemModel.query.get_or_404(item_id)
@@ -48,11 +52,13 @@ class Item(MethodView):
 class ItemList(MethodView):
     """Items list API resource."""
 
+    @jwt_required()
     @blueprint.response(200, ItemSchema(many=True))
     def get(self):
         """Returns all items."""
         return ItemModel.query.all()
 
+    @jwt_required()
     @blueprint.arguments(ItemSchema)
     @blueprint.response(201, ItemSchema)
     def post(self, data):
