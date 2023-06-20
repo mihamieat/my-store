@@ -7,6 +7,7 @@ from flask_jwt_extended import JWTManager
 
 from db import db
 
+from blocklist import BLOCKLIST
 import models  # noqa # pylint: disable=W0611
 from resources.item import blueprint as ItemBlueprint
 from resources.store import blueprint as StoreBlueprint
@@ -82,6 +83,21 @@ swagger-ui-dist/"
 
     with app.app_context():
         db.create_all()  # pylint: disable=E1120
+
+    @jwt.token_in_blocklist_loader
+    def check_if_token_in_blocklist(jwt_header, jwt_payload):  # pylint: disable=W0613
+        """Check if token in blocklist."""
+        return jwt_payload["jti"] in BLOCKLIST
+
+    @jwt.revoked_token_loader
+    def revoked_token_callback(jwt_header, jwt_payload):  # pylint: disable=W0613
+        """Revoked token callback."""
+        return (
+            jsonify(
+                {"description": "The token has been revoked.", "error": "token_revoked"}
+            ),
+            401,
+        )
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)

@@ -2,13 +2,14 @@
 """User resources."""
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
 from models.user import UserModel
 from schemas import UserSchema
+from blocklist import BLOCKLIST
 
 blueprint = Blueprint("Users", "users", description="Operations on users.")
 
@@ -53,6 +54,18 @@ class UserLogin(MethodView):
             return {"access_token": access_token}, 200
 
         abort(401, message="Invalid credentials.")
+
+
+@blueprint.route("/logout")
+class UserLogout(MethodView):
+    """User logout resource."""
+
+    @jwt_required()
+    def post(self):
+        """Log out from the API."""
+        jti = get_jwt()["jti"]
+        BLOCKLIST.add(jti)
+        return {"message": "Successfully logged out."}, 200
 
 
 @blueprint.route("/user/<int:user_id>")
