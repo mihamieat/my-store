@@ -2,6 +2,8 @@
 """User resources."""
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from flask_jwt_extended import create_access_token
+from passlib.hash import pbkdf2_sha256
 from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
@@ -23,7 +25,7 @@ class UserRegister(MethodView):
             abort(409, message="User with that name already exists.")
         user = UserModel(
             username=data["username"],
-            password=data["password"],
+            password=pbkdf2_sha256.hash(data["password"]),
         )
 
         try:
@@ -33,6 +35,24 @@ class UserRegister(MethodView):
             abort(500, message=str(err))
 
         return user
+
+
+@blueprint.route("/login")
+class UserLogin(MethodView):
+    """User login resource."""
+
+    @blueprint.arguments(UserSchema)
+    def post(self, data):
+        """Login with user credentials."""
+        user = UserModel.query.filter(UserModel.username == data["username"]).first()
+
+        password = pbkdf2_sha256.hash(data["password"])
+
+        if user and pbkdf2_sha256.verify(data["password"], password):
+            access_token = create_access_token(identity=user.id)
+            return {"access_token": access_token}, 200
+
+        abort(401, message="Invalid credentials.")
 
 
 @blueprint.route("/user/<int:user_id>")
