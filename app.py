@@ -99,6 +99,19 @@ swagger-ui-dist/"
             401,
         )
 
+    @jwt.needs_fresh_token_loader
+    def token_not_fresh_callback(jwt_header, jwt_payload):  # pylint: disable=W0613
+        """Token refresh callback."""
+        return (
+            jsonify(
+                {
+                    "description": "The token is not fresh.",
+                    "error": "fresh_token_required",
+                }
+            ),
+            401,
+        )
+
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
     api.register_blueprint(TagsBlueprint)

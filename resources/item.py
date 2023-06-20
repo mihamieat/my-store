@@ -61,7 +61,7 @@ class ItemList(MethodView):
         """Returns all items."""
         return ItemModel.query.all()
 
-    @jwt_required()
+    @jwt_required(fresh=True)
     @blueprint.arguments(ItemSchema)
     @blueprint.response(201, ItemSchema)
     def post(self, data):
